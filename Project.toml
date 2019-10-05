@@ -1,0 +1,13 @@
+name = "CoupledODETools"
+uuid = "a5366730-4641-474f-a6b3-e49be01bd5b1"
+authors = ["Jack Scully"]
+version = "0.1.0"
+
+[compat]
+julia = "0.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
