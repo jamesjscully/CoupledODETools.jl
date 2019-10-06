@@ -49,7 +49,6 @@ end
     c1 = FitzughCell(:c1, elec = :c2)
     c2 = FitzughCell(:c2, v0 = .1, w0 = .2, a = 3, elec = :c1, to_alpha = :s1)
     s1 = AlphaSynapse(:s1, synout = [:c2])
-    net = Network([c1,c2,s1])()
 
     @test c1.eqns[1].val == .0
     @test c2.eqns[1].val == .1
