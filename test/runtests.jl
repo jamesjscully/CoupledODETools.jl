@@ -1,6 +1,8 @@
 using CoupledODETools
 using Test
 
+import CoupledODETools
+
 @testset "CoupledODETools.jl" begin
     #test metaprogramming functions
     @test flaginsert(:f, :(f+a+t), :t) == :(t+f+a+t)

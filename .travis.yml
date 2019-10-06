@@ -5,6 +5,9 @@ os:
   - osx
 julia:
   - 0.7
+  - 1.0
+  - 1.1
+  - 1.2
   - nightly
 matrix:
   allow_failures:
@@ -17,7 +20,7 @@ after_success:
 jobs:
   include:
     - stage: Documentation
-      julia: 0.7
+      julia: 1.2
       script: julia --project=docs -e '
           using Pkg;
           Pkg.develop(PackageSpec(path=pwd()));

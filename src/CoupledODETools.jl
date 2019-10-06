@@ -3,7 +3,6 @@ module CoupledODETools
 using LabelledArrays
 using MLStyle: @λ
 using MacroTools: @capture
-using IterTools: product
 
 export Component, @Component, Network
 
