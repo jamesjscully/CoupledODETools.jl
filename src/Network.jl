@@ -82,7 +82,6 @@ function (net::Network)(;kwargs...)
         end
     end
     #handle parameters
-
     for c in net.components
         for eqn in c.eqns
             for p in c.pars
@@ -106,11 +105,6 @@ function (net::Network)(;kwargs...)
     #free parameters: for SLVector version treat scanned as free
     scannednames = [e[1] for e in scannedpars]
     pars = union(freepars, scannednames)
-
-
-
-    println(pars)
-    println(eqtups)
     uType = @SLVector Float32 Tuple(keys(Dict(eqtups)))
     pType = @SLVector Float32 Tuple(pars)
     ics = uType(icarr...)
@@ -126,12 +120,10 @@ function (net::Network)(;kwargs...)
         end
         push!(oeqarr, Expr(:(=), e[1], eqex))
     end
-
     fcode_inner = Expr(:block, oeqarr..., :($uType($(keys(Dict(eqtups))...))))
     fcode = Expr(:function, :(f(u,p,t)), fcode_inner)
-   #for scanned parameters
+    #for scanned parameters
     space = Iterators.product([e[2].val for e in scannedpars]...)
-
     #make in place equations
     eqs! = []
     for i in eachindex(eqtups)

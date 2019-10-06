@@ -53,4 +53,25 @@ end
     @test c1.eqns[1].val == .0
     @test c2.eqns[1].val == .1
     @test c2.pars[2].val == 3
+
+    net = Network([c1,c2,s1])()
 end
+
+
+@Component lorenz begin
+    Dx = σ*(y-x), .1
+    Dy = x*(ρ -g*k -z) - y, .1
+    Dz = x*y - β*z, .1
+    ρout = k -> ~x
+end begin
+    σ = 10.0
+    ρ = 28.0
+    β = 8/3
+    g = .02
+end
+
+l1 = lorenz(:l1, pout = :l2)
+l2 = lorenz(:l2, ρout = :l1)
+net = Network([l1, l2])()
+u0 = net.u0
+f = eval(net.f)
