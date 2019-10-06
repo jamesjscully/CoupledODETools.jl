@@ -2,6 +2,7 @@ using CoupledODETools
 using Test
 
 import CoupledODETools
+import CoupledODETools: flaginsert
 
 @testset "CoupledODETools.jl" begin
     #test metaprogramming functions
@@ -43,7 +44,7 @@ end
     @test c.couplings[2].targets == []
     @test c.pars[1].val == .5
     @test c.eqns[1].sym == :v
-    @test c.eqns[1].val = .0
+    @test c.eqns[1].val == .0
     #test coupling
     c1 = FitzughCell(:c1, elec = :c2)
     c2 = FitzughCell(:c2, v0 = .1, w0 = .2, a = 3, elec = :c1, to_alpha = :s1)
