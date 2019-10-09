@@ -69,9 +69,12 @@ end begin
     β = 8/3
     g = .02
 end
-
-l1 = lorenz(:l1, pout = :l2)
+l = lorenz(:())
+Network([l])()
+l1 = lorenz(:l1, ρout = :l2)
 l2 = lorenz(:l2, ρout = :l1)
 net = Network([l1, l2])()
+net = Network([l1, l2])()
+
 u0 = net.u0
 f = eval(net.f)

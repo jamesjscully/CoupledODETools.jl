@@ -3,25 +3,23 @@ struct Network
 end
 
 function (net::Network)(;kwargs...)
-    # add host component name to coupling functions
     scannedpars = []
     freepars = []
     net = deepcopy(net)
+    #deal with couplings first by inserting the expr with correct values
     for c ∈ net.components
         id = Symbol(:_, c.name)
         for coup ∈ c.couplings
+            # first step is to replace the ~ denoted values with the source name
             coup.ex = postwalk(x -> @capture(x, ~ var_) ? Symbol(var, id) : x, coup.ex)
+            # now update the parameters
             for p in c.pars
                 if p.val isa Number
                     #for numerical pars replace sym with val
                     coup.ex = flagreplace(p.sym, coup.ex, p.val)
                 else
+
                     coup.ex = flagreplace(p.sym, coup.ex, Symbol(p.sym,id))
-                end
-                if p.val isa Array
-                    push!(scannedpars, (Symbol(p.sym, id),p))
-                elseif p.val == :free
-                    push!(freepars, Symbol(p.sym, id))
                 end
             end
         end
@@ -123,7 +121,6 @@ function (net::Network)(;kwargs...)
     fcode_inner = Expr(:block, oeqarr..., :($uType($(keys(Dict(eqtups))...))))
     fcode = Expr(:function, :(f(u,p,t)), fcode_inner)
     #for scanned parameters
-    space = Iterators.product([e[2].val for e in scannedpars]...)
     #make in place equations
     eqs! = []
     for i in eachindex(eqtups)
@@ -136,11 +133,31 @@ function (net::Network)(;kwargs...)
         end
         push!(eqs!, Expr(:(=), :(u[$i]), eqex))
     end
-    fscancode = quote
+    fscode = quote
         function fs(du, u, p, t)
             @inbounds $(Expr(:block, eqs!...))
             nothing
         end
     end
-    return (f = fcode, fscan = fscancode, p = pType, u0 = ics)
+    # create search space
+    # Set is a hacky way of getting rid of repeated values because of where the
+    # scannedpars array is created. This is because the names are mutated which
+    # is weird, but it works.
+    space = Iterators.product(Set([i[2].val for i in scannedpars])...) |> collect
+    u0s = Float32[icarr...]
+    ps = space[1]
+    pp = [[space[i]...] for i in 1:length(space)]
+    function scan(tspan::Tuple{Float32,Float32})
+        prob = ODEProblem(eval(fscode), u0s, tspan, p)
+        prob_func = (prob,i,repeat) -> remake(prob,p=pp[i])
+        return EnsembleProblem(prob, prob_func = prob_func)
+    end
+    return (
+        f = fcode,
+        fs = fscode,
+        scan = scan,
+        p = pType,
+        u0 = ics,
+        space = space
+    )
 end

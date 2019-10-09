@@ -1,14 +1,15 @@
 module CoupledODETools
+    using OrdinaryDiffEq
+    using DiffEqGPU
+    using LabelledArrays
+    using MLStyle: @λ
+    using MacroTools: @capture
 
-using LabelledArrays
-using MLStyle: @λ
-using MacroTools: @capture
+    export Component, @Component, Network
 
-export Component, @Component, Network
-
-include("./utils.jl")
-include("./Component.jl")
-include("./Network.jl")
+    include("./utils.jl")
+    include("./Component.jl")
+    include("./Network.jl")
 
 
 end # module
