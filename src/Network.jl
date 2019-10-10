@@ -102,6 +102,7 @@ function (net::Network)(;kwargs...)
     icarr = [eq.val for c in net.components for eq in c.eqns]
     eqtups = [(Symbol(eq.sym, :_, c.name), eq.rhs) for c in net.components for eq in c.eqns]
     #free parameters: for SLVector version treat scanned as free
+    scannedpars = [Set(scannedpars)...] #get rid of repetitions
     scannednames = [e[1] for e in scannedpars]
     pars = union(freepars, scannednames)
     uType = @SLVector Float32 Tuple(keys(Dict(eqtups)))
@@ -124,12 +125,15 @@ function (net::Network)(;kwargs...)
     #for scanned parameters
     #make in place equations
     eqs! = []
+    idxs = Dict()
     for i in eachindex(eqtups)
         eqex = eqtups[i][2]
-        for j in eachindex([var for (var, eq) in eqtups])
+        vs = [var for (var, eq) in eqtups]
+        for j in eachindex(vs)
+            idxs[vs[j]] = j
             eqex = flagreplace(eqtups[j][1], eqex, :(u[$j]))
         end
-        ps = [Set(scannednames)...]
+        ps = scannednames
         for j in eachindex(ps)
             eqex = flagreplace(ps[j], eqex, :(p[$j]))
         end
@@ -142,10 +146,7 @@ function (net::Network)(;kwargs...)
         end
     end
     # create search space
-    # Set is a hacky way of getting rid of repeated values because of where the
-    # scannedpars array is created. This is because the names are mutated which
-    # is weird, but it works.
-    space = Iterators.product(Set([i[2].val for i in scannedpars])...) |> collect
+    space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
     u0s = Float32[icarr...]
     return (
         f = fcode,
@@ -153,6 +154,7 @@ function (net::Network)(;kwargs...)
         pType = pType,
         u0 = ics,
         u0s = u0s,
-        space = space
+        space = space,
+        idxs = idxs
     )
 end
