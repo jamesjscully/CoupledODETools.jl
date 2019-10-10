@@ -36,4 +36,9 @@ sol = scan(net1, (0f0, 100f0))
 l1 = loren(:l1, ρout = :l2)
 l2 = loren(:l2, ρout = :l1)
 net = Network([l1, l2])
-net()
+
+sol = scan(net, (0f0, 100f0))
+
+n =net()
+
+n.space
