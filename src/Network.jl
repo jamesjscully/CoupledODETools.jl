@@ -158,3 +158,16 @@ function (net::Network)(;kwargs...)
         idxs = idxs
     )
 end
+function scan(net::Network, tspan::Tuple{Float32,Float32};
+    alg = Tsit5(), saveat = .1f0, output_func = (sol,i) -> (sol, false))
+    n = net()
+    u0 = n.u0s
+    p = n.space[1]
+    parr = [[n.space[i]...] for i in 1:length(n.space)]
+
+    prob = ODEProblem(eval(n.fs), n.u0s, tspan, p)
+    prob_func = (prob,i,repeat) -> remake(prob,p=parr[i]);
+    monteprob = EnsembleProblem(prob, prob_func = prob_func)
+    sol = solve(monteprob,alg,EnsembleGPUArray(),trajectories=length(parr),saveat=saveat)
+    resol = reshape(sol.u, size(n.space)...)
+end
