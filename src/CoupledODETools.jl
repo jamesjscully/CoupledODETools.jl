@@ -5,7 +5,7 @@ module CoupledODETools
     using MLStyle: @λ
     using MacroTools: @capture
 
-    export Component, @Component, Network
+    export Component, @Component, Network, scan
 
     include("./utils.jl")
     include("./Component.jl")
