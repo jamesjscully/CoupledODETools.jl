@@ -1,6 +1,7 @@
 struct Network
     components::Vector{Component}
 end
+Network(varargs...) = Network([varargs...])
 
 function (net::Network)(;kwargs...)
     scannedpars = []
