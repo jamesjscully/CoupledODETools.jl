@@ -128,10 +128,11 @@ function (net::Network)(;kwargs...)
         for j in eachindex([var for (var, eq) in eqtups])
             eqex = flagreplace(eqtups[j][1], eqex, :(u[$j]))
         end
-        for j in eachindex(scannednames)
-            eqex = flagreplace(scannednames[j], eqex, :(p[$j]))
+        ps = [Set(scannednames)...]
+        for j in eachindex(ps)
+            eqex = flagreplace(ps[j], eqex, :(p[$j]))
         end
-        push!(eqs!, Expr(:(=), :(u[$i]), eqex))
+        push!(eqs!, Expr(:(=), :(du[$i]), eqex))
     end
     fscode = quote
         function fs(du, u, p, t)
@@ -145,19 +146,12 @@ function (net::Network)(;kwargs...)
     # is weird, but it works.
     space = Iterators.product(Set([i[2].val for i in scannedpars])...) |> collect
     u0s = Float32[icarr...]
-    ps = space[1]
-    pp = [[space[i]...] for i in 1:length(space)]
-    function scan(tspan::Tuple{Float32,Float32})
-        prob = ODEProblem(eval(fscode), u0s, tspan, p)
-        prob_func = (prob,i,repeat) -> remake(prob,p=pp[i])
-        return EnsembleProblem(prob, prob_func = prob_func)
-    end
     return (
         f = fcode,
         fs = fscode,
-        scan = scan,
-        p = pType,
+        pType = pType,
         u0 = ics,
+        u0s = u0s,
         space = space
     )
 end

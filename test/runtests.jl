@@ -3,6 +3,7 @@ using Test
 
 import CoupledODETools
 import CoupledODETools: flaginsert
+import CoupledODETools: flagreplace
 
 @testset "CoupledODETools.jl" begin
     #test metaprogramming functions
@@ -13,7 +14,11 @@ import CoupledODETools: flaginsert
     @test flaginsert(:f, :(x^f), :a) == :(x^(a+f))
     @test flaginsert(:f, :(t/f), :a) == :(t/(a*f))
     @test flaginsert(:f, :(t/(1+f)), :a) == :(t/(a+1+f))
+
 end
+flagreplace(:s, :((f+a+t)), :a) == :(f+a+t)
+flagreplace(:a, :((f+a+t)), :s) == :(f+s+t)
+
 
 @testset "free parameters -> SLArray" begin
 
@@ -56,25 +61,3 @@ end
 
     net = Network([c1,c2,s1])()
 end
-
-
-@Component lorenz begin
-    Dx = σ*(y-x), .1
-    Dy = x*(ρ -g*k -z) - y, .1
-    Dz = x*y - β*z, .1
-    ρout = k -> ~x
-end begin
-    σ = 10.0
-    ρ = 28.0
-    β = 8/3
-    g = .02
-end
-l = lorenz(:())
-Network([l])()
-l1 = lorenz(:l1, ρout = :l2)
-l2 = lorenz(:l2, ρout = :l1)
-net = Network([l1, l2])()
-net = Network([l1, l2])()
-
-u0 = net.u0
-f = eval(net.f)
