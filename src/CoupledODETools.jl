@@ -1,6 +1,4 @@
 module CoupledODETools
-    using OrdinaryDiffEq
-    using DiffEqGPU
     using LabelledArrays
     using MLStyle: @λ
     using MacroTools: @capture
