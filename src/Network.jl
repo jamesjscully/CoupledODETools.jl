@@ -105,9 +105,9 @@ function (net::Network)(;kwargs...)
     scannedpars = [Set(scannedpars)...] #get rid of repetitions
     scannednames = [e[1] for e in scannedpars]
     pars = union(freepars, scannednames)
-    uType = @SLVector Float32 Tuple(keys(Dict(eqtups)))
+    uType = @SLVector Float32 Tuple([e[1] for e in eqtups])
     pType = @SLVector Float32 Tuple(pars)
-    ics = uType(icarr...)
+    ics = uType([e[2] for e in eqtups])
     # prepend pars with p. and vars with u. for out of place
     oeqarr = []
     for e in eqtups
@@ -167,7 +167,7 @@ function scan(net::Network, tspan::Tuple{Float32,Float32};
 
     prob = ODEProblem(eval(n.fs), n.u0s, tspan, p)
     prob_func = (prob,i,repeat) -> remake(prob,p=parr[i]);
-    monteprob = EnsembleProblem(prob, prob_func = prob_func)
+    monteprob = EnsembleProblem(prob, prob_func = prob_func, output_func = output_func)
     sol = solve(monteprob,alg,EnsembleGPUArray(),trajectories=length(parr),saveat=saveat)
     resol = reshape(sol.u, size(n.space)...)
 end
