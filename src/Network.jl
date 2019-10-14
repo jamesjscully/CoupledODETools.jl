@@ -107,7 +107,7 @@ function (net::Network)(;kwargs...)
     pars = union(freepars, scannednames)
     uType = @SLVector Float32 Tuple([e[1] for e in eqtups])
     pType = @SLVector Float32 Tuple(pars)
-    ics = uType([e[2] for e in eqtups])
+    ics = uType(icarr)
     # prepend pars with p. and vars with u. for out of place
     oeqarr = []
     for e in eqtups
