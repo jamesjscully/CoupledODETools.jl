@@ -120,7 +120,8 @@ function (net::Network)(;kwargs...)
         end
         push!(oeqarr, Expr(:(=), e[1], eqex))
     end
-    fcode = Expr(:block, oeqarr..., :($uType($([k for (k,v) in eqtups]...))))
+    fcode_inner = Expr(:block, oeqarr..., :($uType($([k for (k,v) in eqtups]...))))
+    fcode = :((u,p,t)) -> $fcode_inner)
     #for scanned parameters
     #make in place equations
     eqs! = []
