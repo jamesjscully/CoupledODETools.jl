@@ -140,10 +140,7 @@ function (net::Network)(;kwargs...)
         push!(eqs!, Expr(:(=), :(du[$i]), eqex))
     end
     fscode = quote
-        function fs(du, u, p, t)
-            @inbounds $(Expr(:block, eqs!...))
-            nothing
-        end
+        (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end
     # create search space
     space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
