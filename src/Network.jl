@@ -105,8 +105,8 @@ function (net::Network)(;kwargs...)
     scannedpars = [Set(scannedpars)...] #get rid of repetitions
     scannednames = [e[1] for e in scannedpars]
     pars = union(freepars, scannednames)
-    uType = @SLVector Float32 Tuple([e[1] for e in eqtups])
-    pType = @SLVector Float32 Tuple(pars)
+    uType = @SLVector Float64 Tuple([e[1] for e in eqtups])
+    pType = @SLVector Float64 Tuple(pars)
     ics = uType(icarr)
     # prepend pars with p. and vars with u. for out of place
     oeqarr = []
@@ -148,6 +148,7 @@ function (net::Network)(;kwargs...)
     return (
         f = fcode,
         fs = fscode,
+        uType = uType,
         pType = pType,
         u0 = ics,
         u0s = u0s,
