@@ -102,7 +102,7 @@ function (net::Network)(;kwargs...)
     icarr = [eq.val for c in net.components for eq in c.eqns]
     eqtups = [(Symbol(eq.sym, :_, c.name), eq.rhs) for c in net.components for eq in c.eqns]
     #free parameters: for SLVector version treat scanned as free
-    scannedpars = [Set(scannedpars)...] #get rid of repetitions
+    unique!(scannedpars) #get rid of repetitions
     scannednames = [e[1] for e in scannedpars]
     pars = union(freepars, scannednames)
     uType = @SLVector Float64 Tuple([e[1] for e in eqtups])
