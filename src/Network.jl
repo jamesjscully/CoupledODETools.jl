@@ -147,7 +147,7 @@ function (net::Network)(;kwargs...)
     u0s = Float32[icarr...]
 
     spacecu = make_space(scannedpars)
-    u0cu = ArrayPartition(cu([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
+    u0cu = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
 
     cueqs = map(eqs!) do x
         :(@__dot__, $x)
