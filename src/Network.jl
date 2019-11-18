@@ -176,20 +176,3 @@ function (net::Network)(;kwargs...)
         eqtups = eqtups
     )
 end
-
-n = net()
-
-n.fcu
-cueqs = map(n.eqs!) do x
-    :(@. $x)
-end
-
-n.eqs!
-
-fcu = quote
-    (du, u, p, t) -> begin
-        $(Tuple([e[1] for e in n.eqtups])) = u.x
-        $(Tuple([Symbol(:d,e[1]) for e in n.eqtups])) = du.x
-        @inbounds $(Expr(:block, cueqs...))
-    end
-end
