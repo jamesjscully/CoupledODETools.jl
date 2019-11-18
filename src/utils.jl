@@ -64,5 +64,5 @@ function make_space(scannedpars)
                 Expr(:generator,
                     Symbol(:v,i), [Expr(:(=), Symbol(:v,j), vals[j]) for j = 1:length(vals)]...
     ))) end
-    ArrayPartition(cu(eval.(arr))...)
+    ArrayPartition(cu.(eval.(arr))...)
 end
