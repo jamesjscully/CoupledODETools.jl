@@ -154,8 +154,8 @@ function (net::Network)(;kwargs...)
     end
     fcu = quote
         (du, u, p, t) -> begin
-            $(Tuple([e[1] for e in eqtups])) = u.x
-            $(Tuple([Symbol(:d,e[1]) for e in eqtups])) = du.x
+            $(Expr(:tuple, [e[1] for e in eqtups]...)) = u.x
+            $(Expr(:tuple, [Symbol(:d,e[1]) for e in eqtups]...)) = du.x
             @inbounds $(Expr(:block, cueqs...))
         end
     end
