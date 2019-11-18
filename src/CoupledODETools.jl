@@ -2,6 +2,7 @@ module CoupledODETools
     using LabelledArrays
     using MLStyle: @λ
     using MacroTools: @capture
+    using RecursiveArrayTools, CuArrays
 
     export Component, @Component, Network
 

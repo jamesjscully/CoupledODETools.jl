@@ -145,6 +145,21 @@ function (net::Network)(;kwargs...)
     # create search space
     space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
     u0s = Float32[icarr...]
+
+    spacecu = make_space(scannedpars)
+    u0cu = ArrayPartition(([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
+
+    cueqs = map(eqs!) do x
+        :(@__dot__, $x)
+    end
+    fcu = quote
+        (du, u, p, t) -> begin
+            $(Tuple([e[1] for e in eqtups])) = u.x
+            $(Tuple([Symbol(:d,e[1]) for e in eqtups])) = du.x
+            @inbounds $(Expr(:block, cueqs...))
+        end
+    end
+
     return (
         f = fcode,
         fs = fscode,
@@ -153,6 +168,28 @@ function (net::Network)(;kwargs...)
         u0 = ics,
         u0s = u0s,
         space = space,
-        idxs = idxs
+        idxs = idxs,
+        u0cu = u0cu,
+        fcu = fcu,
+        spacecu = spacecu,
+        eqs! = eqs!,
+        eqtups = eqtups
     )
+end
+
+n = net()
+
+n.fcu
+cueqs = map(n.eqs!) do x
+    :(@. $x)
+end
+
+n.eqs!
+
+fcu = quote
+    (du, u, p, t) -> begin
+        $(Tuple([e[1] for e in n.eqtups])) = u.x
+        $(Tuple([Symbol(:d,e[1]) for e in n.eqtups])) = du.x
+        @inbounds $(Expr(:block, cueqs...))
+    end
 end

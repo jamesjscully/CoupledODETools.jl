@@ -53,3 +53,16 @@ function flagreplace(flag, targetex, insertex)
     end
     postwalk(_f,targetex)
 end
+
+function make_space(scannedpars)
+    vals = [e[2].val for e in scannedpars]
+    size(vals)[1] == 1 ? vals = transpose(vals) : nothing
+    arr = Expr[]
+    for i = 1:length(vals)
+        push!(arr,Expr(
+            :comprehension,
+                Expr(:generator,
+                    Symbol(:v,i), [Expr(:(=), Symbol(:v,j), vals[j]) for j = 1:length(vals)]...
+    ))) end
+    ArrayPartition((eval.(arr))...)
+end
