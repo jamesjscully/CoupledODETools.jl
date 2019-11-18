@@ -150,7 +150,7 @@ function (net::Network)(;kwargs...)
     u0cu = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
 
     cueqs = map(eqs!) do x
-        :(@__dot__, $x)
+        :(@__dot__ $x)
     end
     fcu = quote
         (du, u, p, t) -> begin
