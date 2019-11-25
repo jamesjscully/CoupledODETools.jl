@@ -143,19 +143,17 @@ function (net::Network)(;kwargs...)
         (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end
     eqscu = []
-    idxs = Dict()
     for i in eachindex(eqtups)
         eqex = eqtups[i][2]
         vs = [var for (var, eq) in eqtups]
         for j in eachindex(vs)
-            idxs[vs[j]] = j
             eqex = flagreplace(eqtups[j][1], eqex, :(u[$j]))
         end
         ps = scannednames
         for j in eachindex(ps)
             eqex = flagreplace(ps[j], eqex, :(p[$j]))
         end
-        push!(eqs!, Expr(:(=), eqtups[i][1] , eqex))
+        push!(eqscu, Expr(:(=), eqtups[i][1], eqex))
     end
     # create search space
     space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
