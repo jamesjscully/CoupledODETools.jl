@@ -78,9 +78,11 @@ cucode = @λ begin
     :exp -> :(CUDAnative.exp)
     a -> a
 end
-
 rmlines = @λ begin
-    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
+    e :: Expr           -> @match e.head begin
+        :macrocall => Expr(e.head, map(rmlines, e.args)...)
+        a          => Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
+    end
       :: LineNumberNode -> nothing
     a                   -> a
 end

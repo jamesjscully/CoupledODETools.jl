@@ -1,6 +1,6 @@
 module CoupledODETools
     using LabelledArrays
-    using MLStyle: @λ
+    using MLStyle
     using MacroTools: @capture
     using RecursiveArrayTools, CuArrays
 
