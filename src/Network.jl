@@ -105,14 +105,23 @@ function (net::Network)(;kwargs...)
     unique!(scannedpars) #get rid of repetitions
     scannednames = [e[1] for e in scannedpars]
     pars = union(freepars, scannednames)
-    uType = @SLVector Float64 Tuple([e[1] for e in eqtups])
-    pType = @SLVector Float64 Tuple(pars)
-    ics = uType(icarr)
+    return (
+        icarr = icarr,
+        eqtups = eqtups,
+        scannedpars = scannedpars,
+        scannednames = scannednames,
+        pars = pars)
+end
+
+function generate(n::Network)
+    uType = @SLVector Float64 Tuple([e[1] for e in n.eqtups])
+    pType = @SLVector Float64 Tuple(n.pars)
+    u0 = uType(n.icarr)
     # prepend pars with p. and vars with u. for out of place
     oeqarr = []
-    for e in eqtups
+    for e in n.eqtups
         eqex = e[2]
-        for v in keys(Dict(eqtups))
+        for v in keys(Dict(n.eqtups))
             eqex = flagreplace(v, eqex, :(u.$v))
         end
         for p in pars
@@ -120,39 +129,43 @@ function (net::Network)(;kwargs...)
         end
         push!(oeqarr, Expr(:(=), e[1], eqex))
     end
-    fcode_inner = Expr(:block, oeqarr..., :($uType($([k for (k,v) in eqtups]...))))
-    fcode = :((u,p,t) -> $fcode_inner)
+    fcode_inner = Expr(:block, oeqarr..., :($uType($([k for (k,v) in n.eqtups]...))))
+    f = :((u,p,t) -> $fcode_inner) |> rmlines
+    return (f = f, u0 = u0, pType = pType, uType = uType)
+end
+function generate_ensemble(n::Network)
     #for scanned parameters
     #make in place equations
     eqs! = []
     idxs = Dict()
-    for i in eachindex(eqtups)
-        eqex = eqtups[i][2]
-        vs = [var for (var, eq) in eqtups]
+    for i in eachindex(n.eqtups)
+        eqex = n.eqtups[i][2]
+        vs = [var for (var, eq) in n.eqtups]
         for j in eachindex(vs)
             idxs[vs[j]] = j
-            eqex = flagreplace(eqtups[j][1], eqex, :(u[$j]))
+            eqex = flagreplace(n.eqtups[j][1], eqex, :(u[$j]))
         end
-        ps = scannednames
+        ps = n.scannednames
         for j in eachindex(ps)
             eqex = flagreplace(ps[j], eqex, :(p[$j]))
         end
         push!(eqs!, Expr(:(=), :(du[$i]), eqex))
     end
-    fscode = quote
+    f = quote
         (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
-    end
+    end |> rmlines
     # create search space
-    space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
-    u0s = Float32[icarr...]
-
-    spacecu = make_space(scannedpars)
-    u0cu = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
-    cueqs = [Expr(:(=), Symbol(:d, tup[1]), tup[2]) for tup in eqtups]
-    cueqs = map(cueqs) do x
-        :(@__dot__ $x)
+    space = Iterators.product([i[2].val for i in n.scannedpars]...) |> collect
+    u0 = Float32[n.icarr...]
+    return (f = f, u0 = u0, space = space, idxs = idxs)
+end
+function generate_cuarray(net::Network)
+    space = make_space(n.scannedpars)
+    u0 = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(n.eqtups)])...)
+    cueqs = map(n.eqtups) do sym, eqn
+        :(@__dot__ $(Expr(:(=), Symbol(:d, sym), eqn)))
     end
-    fcu = quote
+    f = quote
         (du, u, p, t) -> begin
             $(Expr(:tuple, [e[1] for e in eqtups]...)) = u.x
             $(Expr(:tuple, [Symbol(:d,e[1]) for e in eqtups]...)) = du.x
@@ -160,19 +173,11 @@ function (net::Network)(;kwargs...)
             @inbounds $(Expr(:block, cueqs...))
         end
     end |> rmlines |> code_to_f32 |> cucode
-
-    return (
-        f = fcode,
-        fs = fscode,
-        uType = uType,
-        pType = pType,
-        u0 = ics,
-        u0s = u0s,
-        space = space,
-        idxs = idxs,
-        u0cu = u0cu,
-        fcu = fcu,
-        spacecu = spacecu,
-        eqtups = eqtups
-    )
+    return (f = f, u0 = u0, space = space)
 end
+
+function est(a)
+    println("no")
+end
+function est(::Val{:a}, b) println("yes") end
+est(Val(:b),2)
