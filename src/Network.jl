@@ -113,7 +113,7 @@ function (net::Network)(;kwargs...)
         pars = pars)
 end
 
-function generate(n::Network)
+function generate(n)
     uType = @SLVector Float64 Tuple([e[1] for e in n.eqtups])
     pType = @SLVector Float64 Tuple(n.pars)
     u0 = uType(n.icarr)
@@ -133,7 +133,7 @@ function generate(n::Network)
     f = :((u,p,t) -> $fcode_inner) |> rmlines
     return (f = f, u0 = u0, pType = pType, uType = uType)
 end
-function generate_ensemble(n::Network)
+function generate_ensemble(n)
     #for scanned parameters
     #make in place equations
     eqs! = []
@@ -159,7 +159,7 @@ function generate_ensemble(n::Network)
     u0 = Float32[n.icarr...]
     return (f = f, u0 = u0, space = space, idxs = idxs)
 end
-function generate_cuarray(net::Network)
+function generate_cuarray(n)
     space = make_space(n.scannedpars)
     u0 = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(n.eqtups)])...)
     cueqs = map(n.eqtups) do sym, eqn
