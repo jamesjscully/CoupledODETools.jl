@@ -175,9 +175,3 @@ function generate_cuarray(net::Network)
     end |> rmlines |> code_to_f32 |> cucode
     return (f = f, u0 = u0, space = space)
 end
-
-function est(a)
-    println("no")
-end
-function est(::Val{:a}, b) println("yes") end
-est(Val(:b),2)
