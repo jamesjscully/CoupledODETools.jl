@@ -173,5 +173,6 @@ function (net::Network)(;kwargs...)
         u0cu = u0cu,
         fcu = fcu,
         spacecu = spacecu,
+        eqtups = eqtups
     )
 end
