@@ -142,6 +142,21 @@ function (net::Network)(;kwargs...)
     fscode = quote
         (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end
+    eqscu = []
+    idxs = Dict()
+    for i in eachindex(eqtups)
+        eqex = eqtups[i][2]
+        vs = [var for (var, eq) in eqtups]
+        for j in eachindex(vs)
+            idxs[vs[j]] = j
+            eqex = flagreplace(eqtups[j][1], eqex, :(u[$j]))
+        end
+        ps = scannednames
+        for j in eachindex(ps)
+            eqex = flagreplace(ps[j], eqex, :(p[$j]))
+        end
+        push!(eqs!, Expr(:(=), eqtups[i][1] , eqex))
+    end
     # create search space
     space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
     u0s = Float32[icarr...]
@@ -149,7 +164,7 @@ function (net::Network)(;kwargs...)
     spacecu = make_space(scannedpars)
     u0cu = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
 
-    cueqs = map(eqs!) do x
+    cueqs = map(eqscu) do x
         :(@__dot__ $x)
     end
     fcu = quote
