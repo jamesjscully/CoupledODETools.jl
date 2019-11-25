@@ -72,3 +72,15 @@ code_to_f32 = @λ begin
     n::Number -> convert(Float32, n)
     a -> a
 end
+
+cucode = @λ begin
+    e::Expr -> Expr(e.head, map(cucode, e.args)...)
+    :exp -> :(CUDAnative.exp)
+    a -> a
+end
+
+rmlines = @λ begin
+    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
+      :: LineNumberNode -> nothing
+    a                   -> a
+end

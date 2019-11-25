@@ -142,7 +142,6 @@ function (net::Network)(;kwargs...)
     fscode = quote
         (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end
-    eqscu = [Expr(:(=), Symbol(:d, tup[1]), tup[2]) for tup in eqtups]
     # create search space
     space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
     u0s = Float32[icarr...]
@@ -150,16 +149,17 @@ function (net::Network)(;kwargs...)
     spacecu = make_space(scannedpars)
     u0cu = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
 
-    cueqs = map(eqscu) do x
+    cueqs = map([Expr(:(=), Symbol(:d, tup[1]), tup[2]) for tup in eqtups]) do x
         :(@__dot__ $x)
     end
     fcu = quote
         (du, u, p, t) -> begin
             $(Expr(:tuple, [e[1] for e in eqtups]...)) = u.x
             $(Expr(:tuple, [Symbol(:d,e[1]) for e in eqtups]...)) = du.x
+            $(Expr(:tuple, scannednames...)) = p.x
             @inbounds $(Expr(:block, cueqs...))
         end
-    end |> code_to_f32
+    end |> rmlines |> code_to_f32 |> cucode
 
     return (
         f = fcode,
