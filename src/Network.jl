@@ -148,8 +148,8 @@ function (net::Network)(;kwargs...)
 
     spacecu = make_space(scannedpars)
     u0cu = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(u0s)])...)
-
-    cueqs = map([Expr(:(=), Symbol(:d, tup[1]), tup[2]) for tup in eqtups]) do x
+    cueqs = [Expr(:(=), Symbol(:d, tup[1]), tup[2]) for tup in eqtups]
+    cueqs = map(cueqs) do x
         :(@__dot__ $x)
     end
     fcu = quote
