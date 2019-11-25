@@ -159,7 +159,7 @@ function (net::Network)(;kwargs...)
             $(Expr(:tuple, scannednames...)) = p.x
             @inbounds $(Expr(:block, cueqs...))
         end
-    end |> code_to_f32 |> cucode
+    end |> rmlines |> code_to_f32 |> cucode
 
     return (
         f = fcode,
