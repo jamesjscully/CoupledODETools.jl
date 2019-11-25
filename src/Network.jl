@@ -142,19 +142,7 @@ function (net::Network)(;kwargs...)
     fscode = quote
         (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end
-    eqscu = []
-    for i in eachindex(eqtups)
-        eqex = eqtups[i][2]
-        vs = [var for (var, eq) in eqtups]
-        for j in eachindex(vs)
-            eqex = flagreplace(eqtups[j][1], eqex, :(u[$j]))
-        end
-        ps = scannednames
-        for j in eachindex(ps)
-            eqex = flagreplace(ps[j], eqex, :(p[$j]))
-        end
-        push!(eqscu, Expr(:(=), eqtups[i][1], eqex))
-    end
+    eqscu = [Expr(:(=), Symbol(:d, tup[1]), tup[2]) for tup in eqtups]
     # create search space
     space = Iterators.product([i[2].val for i in scannedpars]...) |> collect
     u0s = Float32[icarr...]
@@ -171,7 +159,7 @@ function (net::Network)(;kwargs...)
             $(Expr(:tuple, [Symbol(:d,e[1]) for e in eqtups]...)) = du.x
             @inbounds $(Expr(:block, cueqs...))
         end
-    end
+    end |> code_to_f32
 
     return (
         f = fcode,

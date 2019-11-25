@@ -66,3 +66,9 @@ function make_space(scannedpars)
     ))) end
     ArrayPartition(cu.(eval.(arr))...)
 end
+
+code_to_f32 = @λ begin
+    e::Expr ->  e.head == :ref ? e : Expr(e.head, map(code_to_f32, e.args)...)
+    n::Number -> convert(Float32, n)
+    a -> a
+end
