@@ -124,7 +124,7 @@ function generate(n)
         for v in keys(Dict(n.eqtups))
             eqex = flagreplace(v, eqex, :(u.$v))
         end
-        for p in pars
+        for p in n.pars
             eqex = flagreplace(p, eqex, :(p.$p))
         end
         push!(oeqarr, Expr(:(=), e[1], eqex))
