@@ -167,7 +167,7 @@ function generate_ensemble(n)
                 j+=1
             elseif !(e[2].val.name in done)
                 for e2 in shared
-                    if e2[2].val.name == e.name
+                    if e2[2].val.name == e[2].val.name
                         eqex = flagreplace(e2[1], eqex, :(p[$j]))
                     end
                 end
