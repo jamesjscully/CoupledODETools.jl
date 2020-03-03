@@ -143,7 +143,7 @@ end
 function generate_ensemble(n)
     #for scanned parameters
     #make in place equations
-    eqs! = [];idxs = Dict()
+    eqs! = [];idxs = Dict(); done = []
     for i in eachindex(n.eqtups)
         eqex = n.eqtups[i][2]
         vs = [var for (var, eq) in n.eqtups]
