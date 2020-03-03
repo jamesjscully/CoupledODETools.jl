@@ -4,7 +4,7 @@ module CoupledODETools
     using MacroTools: @capture
     using RecursiveArrayTools, CuArrays
 
-    export Component, @Component, Network
+    export Component, @Component, Network, SharedPar
     export generate, generate_cuarray, generate_ensemble
 
     include("./utils.jl")
