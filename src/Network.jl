@@ -2,6 +2,10 @@ struct Network
     components::Vector{Component}
 end
 Network(varargs...) = Network([varargs...])
+struct SharedPar
+    name::Symbol
+    range::Vector{Number}
+end
 
 function (net::Network)(;kwargs...)
     scannedpars = []
@@ -145,6 +149,39 @@ function generate_ensemble(n)
             idxs[vs[j]] = j
             eqex = flagreplace(n.eqtups[j][1], eqex, :(u[$j]))
         end
+        #deal with shared pars
+        shared = [(e.name, e.arr) for e in n.scannedpars if e isa SharedPar]
+        j = 1 # insertion index
+        # group shared into tuples with unique names
+        shared = []
+        for e in n.scannedpars
+            if !(e isa SharedPar)
+                eqex = flagreplace(e[1], eqex, :(p[$j]))
+                j+=1
+            else
+                push!(shared, e)
+            end
+        end
+        done = []
+        for e in shared
+            if !(e.name in done)
+                for e2 in shared
+                    if e2.name == e.name
+                        eqex = flagreplace(e2[1], eqex, :(p[$j]))
+                    end
+                end
+                push!(done, e.name)
+                j+=1
+            end
+        end
+        for e in n.scannedpars
+            if e isa SharedPar
+                eqex = flagreplace(e[1], eqex, :(p[$j]))
+                j+=1
+            end
+        end
+
+        unshared = [e for e in n.scannedpars if !(e isa SharedPar)]
         ps = n.scannednames
         for j in eachindex(ps)
             eqex = flagreplace(ps[j], eqex, :(p[$j]))
