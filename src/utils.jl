@@ -7,7 +7,6 @@ function flaginsert(flag, targetex, insertex)
         Expr(:call, f, args...) -> begin
             if :($flag) in args
                 if f in [:+,:*]
-                    println(true)
                     Expr(:call, f, insertex, args...)
                 elseif f == :/
                     args = [x == :($flag) ? :($insertex*$x) : x for x in args]
