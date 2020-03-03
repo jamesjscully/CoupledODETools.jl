@@ -143,8 +143,7 @@ end
 function generate_ensemble(n)
     #for scanned parameters
     #make in place equations
-    eqs! = []
-    idxs = Dict()
+    eqs! = [];idxs = Dict()
     for i in eachindex(n.eqtups)
         eqex = n.eqtups[i][2]
         vs = [var for (var, eq) in n.eqtups]
@@ -155,11 +154,6 @@ function generate_ensemble(n)
         #deal with shared pars
         j = 1 # insertion index
         # group shared into tuples with unique names
-        shared = filter(n.scannedpars) do x
-            x[2].val isa SharedPar
-        end
-        axs = []
-        done = []
         for e in n.scannedpars
             if !(e[2].val isa SharedPar)
                 eqex = flagreplace(e[1], eqex, :(p[$j]))
@@ -179,9 +173,18 @@ function generate_ensemble(n)
         push!(eqs!, Expr(:(=), :(du[$i]), eqex))
     end #loop over n.eqtups
     f = quote
-        (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
+       (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end |> rmlines
-    # create search space
+    #create search space
+    done = []; axs = []
+    axs = map(n.scannedpars) do e
+        if !(e isa SharedPar)
+            push(axs, e)
+        elseif !(e[2].val.name in done)
+            push!(axs, e[2].val.range)
+            push!(done, e[2].val.name)
+        end
+    end
     space = Iterators.product(axs...) |> collect
     u0 = Float32[n.icarr...]
     return (f = f, u0 = u0, space = space, idxs = idxs)
