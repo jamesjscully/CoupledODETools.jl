@@ -143,7 +143,10 @@ end
 function generate_ensemble(n)
     #for scanned parameters
     #make in place equations
-    eqs! = [];idxs = Dict(); done = []
+    eqs! = []; idxs = Dict(); done = []; axs = []
+    shared = filter(n.scannedpars) do x
+        x[2].val isa SharedPar
+    end
     for i in eachindex(n.eqtups)
         eqex = n.eqtups[i][2]
         vs = [var for (var, eq) in n.eqtups]
@@ -176,15 +179,6 @@ function generate_ensemble(n)
        (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end |> rmlines
     #create search space
-    done = []; axs = []
-    axs = map(n.scannedpars) do e
-        if !(e isa SharedPar)
-            push(axs, e)
-        elseif !(e[2].val.name in done)
-            push!(axs, e[2].val.range)
-            push!(done, e[2].val.name)
-        end
-    end
     space = Iterators.product(axs...) |> collect
     u0 = Float32[n.icarr...]
     return (f = f, u0 = u0, space = space, idxs = idxs)
