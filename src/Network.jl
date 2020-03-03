@@ -3,10 +3,12 @@ struct Network
 end
 Network(varargs...) = Network([varargs...])
 
-struct SharedPar{T} <: AbstractVector{T}
+struct SharedPar{T}
     name::Symbol
     range::Vector{T}
 end
+
+PArray = Union(SharePar, Array)
 
 function (net::Network)(;kwargs...)
     scannedpars = []
