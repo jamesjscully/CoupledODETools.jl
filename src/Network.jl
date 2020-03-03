@@ -5,7 +5,7 @@ Network(varargs...) = Network([varargs...])
 
 struct SharedPar{T} <: AbstractVector{T}
     name::Symbol
-    range::Vector{Number}
+    range::Vector{T}
 end
 
 function (net::Network)(;kwargs...)
