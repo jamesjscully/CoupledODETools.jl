@@ -153,65 +153,54 @@ function generate_ensemble(n)
             eqex = flagreplace(n.eqtups[j][1], eqex, :(u[$j]))
         end
         #deal with shared pars
-        shared = [(e.name, e.arr) for e in n.scannedpars if e isa SharedPar]
         j = 1 # insertion index
         # group shared into tuples with unique names
-        shared = []
-        for e in n.scannedpars
-            if !(e isa SharedPar)
-                eqex = flagreplace(e[1], eqex, :(p[$j]))
-                j+=1
-            else
-                push!(shared, e)
-            end
+        shared = filter(n.scannedpars) do x
+            x[2].val isa SharedPar
         end
+        axs = []
         done = []
-        for e in shared
-            if !(e.name in done)
+        for e in n.scannedpars
+            if !(e[2].val isa SharedPar)
+                eqex = flagreplace(e[1], eqex, :(p[$j]))
+                push!(axs[e[2].val])
+                j+=1
+            elseif !(e[2].val.name in done)
                 for e2 in shared
-                    if e2.name == e.name
+                    if e2[2].val.name == e.name
                         eqex = flagreplace(e2[1], eqex, :(p[$j]))
                     end
                 end
-                push!(done, e.name)
+                push!(axs, e[2].val.range)
+                push!(done, e[2].val.name)
                 j+=1
             end
-        end
-        for e in n.scannedpars
-            if e isa SharedPar
-                eqex = flagreplace(e[1], eqex, :(p[$j]))
-                j+=1
-            end
-        end
-
-        unshared = [e for e in n.scannedpars if !(e isa SharedPar)]
-        ps = n.scannednames
-        for j in eachindex(ps)
-            eqex = flagreplace(ps[j], eqex, :(p[$j]))
         end
         push!(eqs!, Expr(:(=), :(du[$i]), eqex))
-    end
+    end #loop over n.eqtups
     f = quote
         (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end |> rmlines
     # create search space
-    space = Iterators.product([i[2].val for i in n.scannedpars]...) |> collect
+    space = Iterators.product(axs...) |> collect
     u0 = Float32[n.icarr...]
     return (f = f, u0 = u0, space = space, idxs = idxs)
 end
-function generate_cuarray(n)
-    space = make_space(n.scannedpars)
-    u0 = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(n.eqtups)])...)
-    cueqs = map(n.eqtups) do sym, eqn
-        :(@__dot__ $(Expr(:(=), Symbol(:d, sym), eqn)))
-    end
-    f = quote
-        (du, u, p, t) -> begin
-            $(Expr(:tuple, [e[1] for e in eqtups]...)) = u.x
-            $(Expr(:tuple, [Symbol(:d,e[1]) for e in eqtups]...)) = du.x
-            $(Expr(:tuple, scannednames...)) = p.x
-            @inbounds $(Expr(:block, cueqs...))
-        end
-    end |> rmlines |> code_to_f32 |> cucode
-    return (f = f, u0 = u0, space = space)
-end
+
+nothing
+#function generate_cuarray(n)
+#    space = make_space(n.scannedpars)
+#    u0 = ArrayPartition(cu.([fill(u0s[i], size(spacecu.x[1])) for i = 1:length(n.eqtups)])...)
+#    cueqs = map(n.eqtups) do sym, eqn
+#        :(@__dot__ $(Expr(:(=), Symbol(:d, sym), eqn)))
+#    end
+#    f = quote
+#        (du, u, p, t) -> begin
+#            $(Expr(:tuple, [e[1] for e in eqtups]...)) = u.x
+#            $(Expr(:tuple, [Symbol(:d,e[1]) for e in eqtups]...)) = du.x
+#            $(Expr(:tuple, scannednames...)) = p.x
+#            @inbounds $(Expr(:block, cueqs...))
+#        end
+#    end |> rmlines |> code_to_f32 |> cucode
+#    return (f = f, u0 = u0, space = space)
+#end
