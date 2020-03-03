@@ -8,7 +8,7 @@ struct SharedPar{T}
     range::Vector{T}
 end
 
-PArray = Union{SharedPar, Array}
+
 
 function (net::Network)(;kwargs...)
     scannedpars = []
@@ -98,7 +98,7 @@ function (net::Network)(;kwargs...)
                 else
                     eqn.rhs = flagreplace(p.sym, eqn.rhs, newname)
                 end
-                if p.val isa Array
+                if p.val isa Union{SharedPar, Array}
                     push!(scannedpars, (newname,p))
                 elseif p.val == :free
                     push!(freepars, newname)
