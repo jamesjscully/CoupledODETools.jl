@@ -2,7 +2,8 @@ struct Network
     components::Vector{Component}
 end
 Network(varargs...) = Network([varargs...])
-struct SharedPar
+
+struct SharedPar{T} <: AbstractVector{T}
     name::Symbol
     range::Vector{Number}
 end
