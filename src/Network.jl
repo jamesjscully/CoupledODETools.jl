@@ -8,7 +8,7 @@ struct SharedPar{T}
     range::Vector{T}
 end
 
-PArray = Union{SharePar, Array}
+PArray = Union{SharedPar, Array}
 
 function (net::Network)(;kwargs...)
     scannedpars = []
