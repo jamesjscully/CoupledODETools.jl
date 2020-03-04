@@ -8,8 +8,6 @@ struct SharedPar{T}
     range::Vector{T}
 end
 
-
-
 function (net::Network)(;kwargs...)
     scannedpars = []
     freepars = []
@@ -154,23 +152,25 @@ function generate_ensemble(n)
             idxs[vs[j]] = j
             eqex = flagreplace(n.eqtups[j][1], eqex, :(u[$j]))
         end
-        #deal with shared pars
         j = 1 # insertion index
-        # group shared into tuples with unique names
+        replaced = []
         for e in n.scannedpars
             if !(e[2].val isa SharedPar)
                 eqex = flagreplace(e[1], eqex, :(p[$j]))
                 push!(axs[e[2].val])
                 j+=1
-            elseif !(e[2].val.name in done)
-                for e2 in shared
-                    if e2[2].val.name == e[2].val.name
-                        eqex = flagreplace(e2[1], eqex, :(p[$j]))
+            else #deal with shared pars
+                if !(e[2].val.name in replaced) # update the eqn expr
+                    for e2 in shared
+                        if e2[2].val.name == e[2].val.name
+                            eqex = flagreplace(e2[1], eqex, :(p[$j]))
+                        end
                     end
+                    j+=1
+                if !(e[2].val.name in done) # for search space
+                    push!(axs, e[2].val.range)
+                    push!(done, e[2].val.name)
                 end
-                push!(axs, e[2].val.range)
-                push!(done, e[2].val.name)
-                j+=1
             end
         end
         push!(eqs!, Expr(:(=), :(du[$i]), eqex))
