@@ -180,7 +180,7 @@ function generate_ensemble(n)
        (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
     end |> rmlines
     #create search space
-    space = Iterators.product(axs...) |> collect
+    space = length(axs) > 1 ? Iterators.product(axs...) |> collect : axs[1]
     u0 = Float32[n.icarr...]
     return (f = f, u0 = u0, space = space, idxs = idxs)
 end
