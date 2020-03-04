@@ -167,6 +167,7 @@ function generate_ensemble(n)
                         end
                     end
                     j+=1
+                end
                 if !(e[2].val.name in done) # for search space
                     push!(axs, e[2].val.range)
                     push!(done, e[2].val.name)
