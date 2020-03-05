@@ -157,7 +157,10 @@ function generate_ensemble(n)
         for e in n.scannedpars
             if !(e[2].val isa SharedPar)
                 eqex = flagreplace(e[1], eqex, :(p[$j]))
-                push!(axs, e[2].val)
+                if !(e[1] in done)
+                    push!(axs, e[2].val)
+                    push!(done, e[1])
+                end
                 j+=1
             else #deal with shared pars
                 if !(e[2].val.name in replaced) # update the eqn expr
