@@ -180,7 +180,10 @@ function generate_ensemble(n)
         push!(eqs!, Expr(:(=), :(du[$i]), eqex))
     end #loop over n.eqtups
     f = quote
-       (du, u, p, t) -> @inbounds $(Expr(:block, eqs!...))
+       (du, u, p, t) -> begin
+            @inbounds $(Expr(:block, eqs!...))
+            return nothing
+        end
     end |> rmlines
     #create search space
     space = length(axs) > 1 ? Iterators.product(axs...) |> collect : axs[1]
