@@ -96,11 +96,11 @@ function (net::Network)(;kwargs...)
                 else
                     eqn.rhs = flagreplace(p.sym, eqn.rhs, newname)
                 end
-                if p.val isa Union{SharedPar, Array}
-                    push!(scannedpars, (newname,p))
-                elseif p.val == :free
-                    push!(freepars, newname)
-                end
+            end
+            if p.val isa Union{SharedPar, Array}
+                push!(scannedpars, (newname,p))
+            elseif p.val == :free
+                push!(freepars, newname)
             end
         end
     end
