@@ -88,8 +88,8 @@ function (net::Network)(;kwargs...)
     #handle parameters
     for c in net.components
         for p in c.pars
+            newname = Symbol(p.sym, :_, c.name)
             for eqn in c.eqns
-                newname = Symbol(p.sym, :_, c.name)
                 if p.val isa Number
                     #for numerical pars replace sym with val
                     eqn.rhs = flagreplace(p.sym, eqn.rhs, p.val)
