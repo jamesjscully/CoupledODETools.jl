@@ -186,7 +186,14 @@ function generate_ensemble(n)
         end
     end |> rmlines
     #create search space
-    space = length(axs) > 1 ? Iterators.product(axs...) |> collect : axs[1]
+    local space
+    if isempty(axs)
+        space = []
+    elseif length(axs) == 1
+        space = axs[1]
+    else
+        space = Iterators.product(axs...)
+    end
     u0 = Float32[n.icarr...]
     return (f = f, u0 = u0, space = space, idxs = idxs)
 end
