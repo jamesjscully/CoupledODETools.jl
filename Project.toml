@@ -4,7 +4,7 @@ authors = ["Jack Scully"]
 version = "1.0.0"
 
 [deps]
-CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 LabelledArrays = "2ee39098-c373-598a-b85f-a56591580800"
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"

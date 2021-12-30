@@ -74,7 +74,7 @@ end
 
 cucode = @λ begin
     e::Expr -> Expr(e.head, map(cucode, e.args)...)
-    :exp -> :(CUDAnative.exp)
+    :exp -> :exp
     a -> a
 end
 rmlines = @λ begin

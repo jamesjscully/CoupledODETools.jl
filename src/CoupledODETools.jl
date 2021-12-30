@@ -2,7 +2,8 @@ module CoupledODETools
     using LabelledArrays
     using MLStyle
     using MacroTools: @capture
-    using RecursiveArrayTools, CuArrays
+    using RecursiveArrayTools
+    using CUDA
 
     export Component, @Component, Network, SharedPar
     export generate, generate_cuarray, generate_ensemble
