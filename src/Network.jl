@@ -169,6 +169,7 @@ function generate_ensemble(n)
                             eqex = flagreplace(e2[1], eqex, :(p[$j]))
                         end
                     end
+                    push!(replaced, e[2].val.name)
                     j+=1
                 end
                 if !(e[2].val.name in done) # for search space
