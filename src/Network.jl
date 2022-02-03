@@ -118,7 +118,7 @@ function (net::Network)(;kwargs...)
         pars = pars)
 end
 
-function generate(n)
+function generate(n, mod = Main)
     uType = @SLVector Float64 Tuple([e[1] for e in n.eqtups])
     pType = @SLVector Float64 Tuple(n.pars)
     u0 = uType(n.icarr)
@@ -136,9 +136,9 @@ function generate(n)
     end
     fcode_inner = Expr(:block, oeqarr..., :($uType($([k for (k,v) in n.eqtups]...))))
     f = :((u,p,t) -> $fcode_inner) |> rmlines
-    return (f = Core.eval(Main, f), fcode = f, u0 = u0, pType = pType, uType = uType)
+    return (f = Core.eval(mod, f), fcode = f, u0 = u0, pType = pType, uType = uType)
 end
-function generate_ensemble(n)
+function generate_ensemble(n, mod = Main)
     #for scanned parameters
     #make in place equations
     eqs! = []; idxs = Dict(); done = []; axs = []
@@ -196,7 +196,7 @@ function generate_ensemble(n)
         space = Iterators.product(axs...)
     end
     u0 = Float32[n.icarr...]
-    return (f = Core.eval(Main, f), fcode = f, u0 = u0, space = space, idxs = idxs)
+    return (f = Core.eval(mod, f), fcode = f, u0 = u0, space = space, idxs = idxs)
 end
 
 nothing
